@@ -17,6 +17,8 @@ class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
     votes = models.IntegerField(default=0)
+    # votes를 누르면 선택된 각 choice의 아이디에 저장시켜야함
+
 
     def __str__(self):
         return self.choice_text

@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, Http404
-from .models import Question
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from .models import Question, Choice
 from django.template import loader
 
 
@@ -37,9 +37,53 @@ def detail(request, question_id):
     return render(request, 'polls/detail.html', context)
 
 def results(request, question_id):
-    response = "You're looking at the results of question %s."
-    return HttpResponse(response % question_id)
+    # question_id 해당하는 Question 인스턴스 전달
+    # 템플릿 (polls/templates/polls/results.html
+    # Question의 question_tesxt를 보여주고
+    # Question에 연결된 Choice목록과 vote수를 보여준다
+    # {% for %} loop구문과
+    # question.choice_set.all 을 사용
+
+    question = Question.objects.get(id=question_id)
+    # choice_id = request.POST['choice']
+    # choice = Choice.objects.get(id=choice_id)
+    # choice_text = choice.choice_text
+    # choice_votes = choice.votes
+
+    context = {
+        'question' : question,
+        # 'choice' : choice,
+        # 'choice_text' : choice_text,
+        # 'choice_votes' : choice_votes
+    }
+
+    return render(request, 'polls/results.html', context)
 
 def vote(request, question_id):
-    
-    return HttpResponse("You're voting on question %s." % question_id)
+
+    # print('request.get : ', request.GET)
+    # print('request.POST : ', request.POST)
+    # 선택한 choice의 choice_text와 id값을 갖는 문자열 생성
+    question = Question.objects.get(id=question_id)
+    question_text = question.question_text
+
+    choice_id = request.POST['choice']
+    choice = Choice.objects.get(id=choice_id)
+    choice_text = choice.choice_text
+
+    choice.votes += 1
+    choice.save()
+
+    choice_votes = choice.votes
+
+    result = 'question_text : {}, choice_text: {}, choice.id: {}, choice_votes: {}'.format(
+        question_text,
+        choice_text,
+        choice_id,
+        choice_votes,
+    )
+    url = '/polls/{}/results/'.format(question_id)
+    return HttpResponseRedirect(url)
+
+    url = reverse('polls:results', args=[question_id])
+    return HttpResponseRedirect(url)
